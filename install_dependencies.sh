@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Define installation directory
+# Definindo o diretório de instalação
 DIR=$HOME/.wrf_dependencies
 mkdir -p $DIR
 
-# Set environment variables for the installation process
+# Implementando as variáveis de ambiente
 export NETCDF=$DIR/netcdf
 export CC=gcc
 export CXX=g++
@@ -15,10 +15,10 @@ export FFLAGS="-m64 -fallow-argument-mismatch"
 export LDFLAGS="-L$NETCDF/lib -L$DIR/grib2/lib"
 export CPPFLAGS="-I$NETCDF/include -I$DIR/grib2/include -fcommon"
 
-# Number of cores for compilation
+# Numero de cores utilizados na instalação
 JOBS=4
 
-# Function to download, extract, compile, and install libraries
+# download, extract, compile, and install
 install_lib() {
     local url=$1
     local dir_prefix=$2
@@ -59,15 +59,15 @@ install_lib() {
 
     cd ../..
     rm -rf "$tar_file" "$extract_dir"
-    echo "$(basename "$inner_dir") installed successfully!"
+    echo "$(basename "$inner_dir") Tudo certo com a instalação!"
 
     echo
-    read -p "Press Enter to continue to the next library..."
+    read -p "Aperte Enter para continuar..."
 }
 
 
 
-# Install libraries
+# Instalar bibliotecas
 install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.11.tar.gz" "$DIR/grib2"
 
 install_lib "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz" "$DIR/netcdf" "--with-zlib=$DIR/grib2 --enable-fortran --enable-shared"
@@ -83,7 +83,7 @@ install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_f
 
 install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz" "$DIR/grib2"
 
-# Set permanent environment variables in .bashrc
+# setar as variáveis de forma permanente no ~/.bashrc 
 echo "Setting up permanent environment variables..."
 cat <<EOF >> ~/.bashrc
 
@@ -94,6 +94,4 @@ export PATH=\$NETCDF/bin:$DIR/mpich/bin:\$PATH
 export JASPERLIB=$DIR/grib2/lib
 export JASPERINC=$DIR/grib2/include
 EOF
-
-echo "Installation complete! Restart your terminal or run 'source ~/.bashrc' to apply the settings."
-
+echo "Instalação completa! 'source ~/.bashrc' para aplicar."
