@@ -70,7 +70,7 @@ install_lib() {
 # Instalar bibliotecas
 install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.11.tar.gz" "$DIR/grib2"
 
-install_lib "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz" "$DIR/netcdf" "--with-zlib=$DIR/grib2 --enable-fortran --enable-shared"
+install_lib "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz" "$DIR/netcdf" "--with-zlib=$DIR/grib2" #--enable-fortran --enable-shared"
 
 install_lib "https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.7.2.tar.gz" "$DIR/netcdf" "--disable-dap --enable-netcdf4 --enable-hdf5 --enable-shared"
 
