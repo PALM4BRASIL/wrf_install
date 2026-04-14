@@ -3,10 +3,10 @@ Este script foi desenvolvido para instalar automaticamente as dependências mín
 
 ### Como usar:
 
-Torne o script executável:
+O mínimo necessário para esta instalação em uma distro baseada em Debian (ou o equivalente ):
 
 ```bash
-chmod +x install_dependencies.sh
+sudo apt build-essential m4
 ```
 
 Execute-o com:
