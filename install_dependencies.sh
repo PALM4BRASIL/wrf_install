@@ -17,7 +17,7 @@ install_gcc() {
 
     cd $src_dir || exit 1
 
-    echo "Baixando dependências..."
+    echo "Baixando dependências"
     ./contrib/download_prerequisites
 
     cd ..
@@ -38,13 +38,19 @@ install_gcc() {
 
     echo "GCC instalado com sucesso!"
     # tornando a instalação permanente
-    echo "Adicionando GCC ao ~/.bashrc..."
+    echo "Adicionando GCC ao ~/.bashrc"
 
     # evita duplicar linhas
     if ! grep -q "$DIR/gcc115/bin" ~/.bashrc; then 
 cat <<EOF >> ~/.bashrc	
 # GCC 11.5
 export PATH=$DIR/gcc115/bin:\$PATH
+# WRF Dependencies
+export NETCDF=$DIR/netcdf
+export LD_LIBRARY_PATH=\$NETCDF/lib:$DIR/grib2/lib
+export PATH=\$NETCDF/bin:$DIR/mpich/bin:\$PATH
+export JASPERLIB=$DIR/grib2/lib
+export JASPERINC=$DIR/grib2/include
 EOF
     fi
     
@@ -57,34 +63,28 @@ if [ -x "$DIR/gcc115/bin/gcc" ]; then
     GCC_VERSION=$($DIR/.gcc115/bin/gcc -dumpversion | cut -d. -f1)
 
     if [ "$GCC_VERSION" = "11" ]; then
-        echo "GCC 11 já está instalado em $DIR/gcc115"
-        USE_CUSTOM_GCC=true
+        echo "GCC 11 já está instalado em $DIR/gcc115"       
     else
-        echo "Foi encontrada uma versão alternativa ($GCC_VERSION), reinstalando..."
+        echo "Foi encontrada uma versão alternativa para o GCC: ($GCC_VERSION), reinstalando"
         install_gcc
-        USE_CUSTOM_GCC=true
     fi
 
 else
     # Verificando gcc do sistema
     if command -v gcc >/dev/null 2>&1; then
-        SYS_GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
+        GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
 
-        if [ "$SYS_GCC_VERSION" = "11" ]; then
+        if [ "$GCC_VERSION" = "11" ]; then
             echo "GCC 11 já instalado"
-            USE_CUSTOM_GCC=false
         else
-            echo "Sistema tem GCC $SYS_GCC_VERSION, mas precisa ter o 11.5 instalado"
+            echo "Sistema tem GCC $GCC_VERSION, mas precisa ter o 11.5 instalado"
             install_gcc
-            USE_CUSTOM_GCC=true
         fi
     else
         echo "GCC não encontrado no sistema, instalando"
         install_gcc
-        USE_CUSTOM_GCC=true
     fi
 fi
-
 
 # Implementando as variáveis de ambiente
 export NETCDF=$DIR/netcdf
@@ -102,6 +102,7 @@ JOBS=4
 
 # download, extract, compile, and install
 install_lib() {
+    set -e
     local url=$1
     local dir_prefix=$2
     local config_options=$3
@@ -110,10 +111,10 @@ install_lib() {
     local base_name=${tar_file%.tar.gz}
     local extract_dir="build_${base_name}_tmp"
 
-    echo "Downloading $tar_file..."
+    echo "Downloading $tar_file"
     wget -q $url -O $tar_file || { echo "Error downloading $tar_file"; exit 1; }
 
-    echo "Creating temp dir $extract_dir and extracting $tar_file..."
+    echo "Creating temp dir $extract_dir and extracting $tar_file"
     mkdir -p "$extract_dir"
     tar xzvf "$tar_file" -C "$extract_dir" || { echo "Error extracting $tar_file"; exit 1; }
 
@@ -125,26 +126,24 @@ install_lib() {
     echo "Entering directory: $inner_dir"
     cd "$inner_dir" || { echo "Could not enter $inner_dir"; exit 1; }
 
-    echo "Configuring $(basename "$inner_dir")..."
+    echo "Configuring $(basename "$inner_dir")"
     if [ ! -f configure ]; then
-        echo "'configure' not found. Trying to generate it with autoreconf..."
+        echo "'configure' not found. Trying to generate it with autoreconf"
         autoreconf -i || { echo "autoreconf failed"; exit 1; }
     fi
 
     ./configure --prefix="$dir_prefix" $config_options || { echo "Error configuring $(basename "$inner_dir")"; exit 1; }
 
-    echo "Compiling $(basename "$inner_dir")..."
+    echo "Compiling $(basename "$inner_dir")"
     make -j $JOBS || { echo "Compilation failed"; exit 1; }
 
-    echo "Installing $(basename "$inner_dir")..."
+    echo "Installing $(basename "$inner_dir")"
     make install || { echo "Install failed"; exit 1; }
 
     cd ../..
     rm -rf "$tar_file" "$extract_dir"
     echo "$(basename "$inner_dir") Tudo certo com a instalação!"
-
-    echo
-    read -p "Aperte Enter para continuar..."
+    sleep 2
 }
 
 
@@ -166,7 +165,7 @@ install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_f
 install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz" "$DIR/grib2"
 
 # setar as variáveis de forma permanente no ~/.bashrc 
-echo "Setting up permanent environment variables..."
+echo "Setting up permanent environment variables"
 cat <<EOF >> ~/.bashrc
 
 # WRF Dependencies
@@ -176,4 +175,5 @@ export PATH=\$NETCDF/bin:$DIR/mpich/bin:\$PATH
 export JASPERLIB=$DIR/grib2/lib
 export JASPERINC=$DIR/grib2/include
 EOF
-echo "Instalação completa! 'source ~/.bashrc' para aplicar."
+echo "Instalação completa!"
+source ~/.bashrc
