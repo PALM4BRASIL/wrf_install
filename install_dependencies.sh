@@ -54,7 +54,7 @@ EOF
 
 # Verifica a instalacao do gcc 
 if [ -x "$DIR/gcc115/bin/gcc" ]; then
-    GCC_VERSION=$($DIR/.gcc115/bin/gcc -dumpversion | cut -d. -f1)
+    GCC_VERSION=$($DIR/gcc115/bin/gcc -dumpversion | cut -d. -f1)
 
     if [ "$GCC_VERSION" = "11" ]; then
         echo "GCC 11 já está instalado em $DIR/gcc115"
