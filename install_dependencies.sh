@@ -6,17 +6,19 @@ mkdir -p $DIR
 
 # funcao que instala o gcc 11.5
 install_gcc() {
-    local tar_file="gcc-11.5.0.tar.xz"
+    local url="https://ftp.gnu.org/gnu/gcc/gcc-11.5.0/gcc-11.5.0.tar.xz"
+    local tar_file=${url##*/}
     local src_dir="gcc-11.5.0"
     local build_dir="build_gcc"
 
     echo "Baixando GCC 11.5"
     wget -q $url -O $tar_file || { echo "Erro no download"; exit 1; }
+    
     tar -xf $tar_file || { echo "Erro ao extrair"; exit 1; }
 
     cd $src_dir || exit 1
 
-    echo "Baixando dependências"
+    echo "Baixando dependências do GCC"
     ./contrib/download_prerequisites
 
     cd ..
@@ -25,21 +27,25 @@ install_gcc() {
 
     ../$src_dir/configure \
         --prefix=$DIR/gcc115 \
-        --disable-multilib  --disable-default-pie\
+        --disable-multilib \ 
+        --disable-default-pie\
         --enable-languages=c,c++,fortran \
-        --disable-nls --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
+        --disable-nls \
+        --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
 
-    make -j $JOBS || { echo "Erro na compilação"; exit 1; }
+    #make -j $JOBS || { echo "Erro na compilação"; exit 1; }
+    # Vou modificar isso por hora, tá estourando a memoria quando roda em paralelo. É mais lento, porém resolve.
     make install || { echo "Erro na instalação"; exit 1; }
 
     cd ..
     rm -rf $tar_file $src_dir $build_dir
 
     echo "GCC instalado com sucesso!"
-    # tornando a instalação permanente
+    
+    # subindo no bashrc, para compor o sistema permanentemente
     echo "Adicionando GCC ao ~/.bashrc"
 
-    # evita duplicar linhas
+    # verifica se ja foi adicionado
     if ! grep -q "$DIR/gcc115/bin" ~/.bashrc; then 
 cat <<EOF >> ~/.bashrc	
 # GCC 11.5
@@ -59,9 +65,9 @@ EOF
 
 # Verifica a instalacao do gcc 
 if [ -x "$DIR/gcc115/bin/gcc" ]; then
-    GCC_VERSION=$($DIR/.gcc115/bin/gcc -dumpversion | cut -d. -f1)
+    GCC_VERSION=$($DIR/gcc115/bin/gcc -dumpversion | cut -d. -f1)
 
-    if [ "$GCC_VERSION" = "11" ]; then
+    if [ "$GCC_VERSION" = "11.5" ]; then
         echo "GCC 11 já está instalado em $DIR/gcc115"       
     else
         echo "Foi encontrada uma versão alternativa para o GCC: ($GCC_VERSION), reinstalando"
@@ -73,7 +79,7 @@ else
     if command -v gcc >/dev/null 2>&1; then
         GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
 
-        if [ "$GCC_VERSION" = "11" ]; then
+        if [ "$GCC_VERSION" = "11.5" ]; then
             echo "GCC 11 já instalado"
         else
             echo "Sistema tem GCC $GCC_VERSION, mas precisa ter o 11.5 instalado"
@@ -127,10 +133,10 @@ install_lib() {
 
     ./configure --prefix="$dir_prefix" $config_options || { echo "Error configuring $(basename "$inner_dir")"; exit 1; }
 
-    echo "Compiling $(basename "$inner_dir")"
+    echo "Compilando $(basename "$inner_dir")"
     make -j $JOBS || { echo "Compilation failed"; exit 1; }
 
-    echo "Installing $(basename "$inner_dir")"
+    echo "Instalando $(basename "$inner_dir")"
     make install || { echo "Install failed"; exit 1; }
 
     cd ../..
