@@ -6,8 +6,7 @@ mkdir -p $DIR
 
 # funcao que instala o gcc 11.5
 install_gcc() {
-    local url="https://ftp.gnu.org/gnu/gcc/gcc-11.5.0/gcc-11.5.0.tar.xz"
-    local tar_file=${url##*/}
+    local tar_file="gcc-11.5.0.tar.xz"
     local src_dir="gcc-11.5.0"
     local build_dir="build_gcc"
 
@@ -26,7 +25,7 @@ install_gcc() {
 
     ../$src_dir/configure \
         --prefix=$DIR/gcc115 \
-        --disable-multilib \
+        --disable-multilib  --disable-default-pie\
         --enable-languages=c,c++,fortran \
         --disable-nls --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
 
@@ -111,10 +110,6 @@ install_lib() {
     local base_name=${tar_file%.tar.gz}
     local extract_dir="build_${base_name}_tmp"
 
-    echo "Downloading $tar_file"
-    wget -q $url -O $tar_file || { echo "Error downloading $tar_file"; exit 1; }
-
-    echo "Creating temp dir $extract_dir and extracting $tar_file"
     mkdir -p "$extract_dir"
     tar xzvf "$tar_file" -C "$extract_dir" || { echo "Error extracting $tar_file"; exit 1; }
 
@@ -123,10 +118,8 @@ install_lib() {
         inner_dir="$extract_dir"
     fi
 
-    echo "Entering directory: $inner_dir"
     cd "$inner_dir" || { echo "Could not enter $inner_dir"; exit 1; }
 
-    echo "Configuring $(basename "$inner_dir")"
     if [ ! -f configure ]; then
         echo "'configure' not found. Trying to generate it with autoreconf"
         autoreconf -i || { echo "autoreconf failed"; exit 1; }
@@ -149,20 +142,15 @@ install_lib() {
 
 
 # Instalar bibliotecas
-install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.11.tar.gz" "$DIR/grib2"
-
-install_lib "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz" "$DIR/netcdf" "--with-zlib=$DIR/grib2" #--enable-fortran --enable-shared"
-
-install_lib "https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.7.2.tar.gz" "$DIR/netcdf" "--disable-dap --enable-netcdf4 --enable-hdf5 --enable-shared"
+install_lib "zlib-1.2.11.tar.gz" "$DIR/grib2"
+install_lib "hdf5-1.10.5.tar.gz" "$DIR/netcdf" "--with-zlib=$DIR/grib2"
+install_lib "v4.7.2.tar.gz" "$DIR/netcdf" "--disable-dap --enable-netcdf4 --enable-hdf5 --enable-shared"
 
 export LIBS="-lnetcdf -lz"
-install_lib "https://github.com/Unidata/netcdf-fortran/archive/v4.5.2.tar.gz" "$DIR/netcdf" "--disable-hdf5 --enable-shared"
-
-install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/mpich-3.0.4.tar.gz" "$DIR/mpich"
-
-install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz" "$DIR/grib2"
-
-install_lib "https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz" "$DIR/grib2"
+install_lib "v4.5.2.tar.gz" "$DIR/netcdf" "--disable-hdf5 --enable-shared"
+install_lib "mpich-3.0.4.tar.gz" "$DIR/mpich"
+install_lib "libpng-1.2.50.tar.gz" "$DIR/grib2"
+install_lib "jasper-1.900.1.tar.gz" "$DIR/grib2"
 
 # setar as variáveis de forma permanente no ~/.bashrc 
 echo "Setting up permanent environment variables"
