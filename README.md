@@ -3,7 +3,7 @@ Este script foi desenvolvido para instalar automaticamente as dependências mín
 
 ### Como usar:
 
-O mínimo necessário para esta instalação em uma distro baseada em Debian (ou o equivalente ):
+O mínimo necessário para esta instalação em uma distro baseada em Debian (ou o equivalente na sua distro):
 
 ```bash
 sudo apt build-essential m4
