@@ -115,7 +115,10 @@ install_lib() {
     local tar_file=${url##*/}
     local base_name=${tar_file%.tar.gz}
     local extract_dir="build_${base_name}_tmp"
-
+    
+    echo "Downloading $tar_file"
+    wget -q $url -O $tar_file || { echo "Error downloading $tar_file"; exit 1; }
+    
     mkdir -p "$extract_dir"
     tar xzvf "$tar_file" -C "$extract_dir" || { echo "Error extracting $tar_file"; exit 1; }
 
