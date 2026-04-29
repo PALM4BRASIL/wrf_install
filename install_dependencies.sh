@@ -26,14 +26,14 @@ install_gcc() {
     cd $build_dir
 
     ../$src_dir/configure \
-        --prefix=$DIR_WRF/gcc115 \
-        --disable-multilib \ 
-        --disable-default-pie\
-        --enable-languages=c,c++,fortran \
-        --disable-nls \
-        --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
-
+       --prefix=$DIR_WRF/gcc115 \
+       --disable-multilib \
+       --disable-default-pie \
+       --enable-languages=c,c++,fortran \
+       --disable-nls \
+       --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
     #make -j $JOBS || { echo "Erro na compilação"; exit 1; }
+    make 
     # Vou modificar isso por hora, tá estourando a memoria quando roda em paralelo. É mais lento, porém resolve.
     make install || { echo "Erro na instalação"; exit 1; }
 
@@ -64,10 +64,10 @@ EOF
 }
 
 # Verifica a instalacao do gcc 
-if [ -x "DIR_WRF/gcc115/bin/gcc" ]; then
+if [ -x "$DIR_WRF/gcc115/bin/gcc" ]; then
     GCC_VERSION=$($DIR_WRF/gcc115/bin/gcc -dumpversion | cut -d. -f1)
 
-    if [ "$GCC_VERSION" = "11.5" ]; then
+    if [ "$GCC_VERSION" = "11" ]; then
         echo "GCC 11 já está instalado em $DIR_WRF/gcc115"       
     else
         echo "Foi encontrada uma versão alternativa para o GCC: ($GCC_VERSION), reinstalando"
@@ -79,10 +79,10 @@ else
     if command -v gcc >/dev/null 2>&1; then
         GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
 
-        if [ "$GCC_VERSION" = "11.5" ]; then
+        if [ "$GCC_VERSION" = "11" ]; then
             echo "GCC 11 já instalado"
         else
-            echo "Sistema tem GCC $GCC_VERSION, mas precisa ter o 11.5 instalado"
+            echo "Sistema tem GCC $GCC_VERSION, mas precisa ter o 11"
             install_gcc
         fi
     else
