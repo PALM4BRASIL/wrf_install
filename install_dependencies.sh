@@ -26,14 +26,14 @@ install_gcc() {
     cd $build_dir
 
     ../$src_dir/configure \
-        --prefix=$DIR_WRF/gcc115 \
-        --disable-multilib \ 
-        --disable-default-pie\
-        --enable-languages=c,c++,fortran \
-        --disable-nls \
-        --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
-
+       --prefix=$DIR_WRF/gcc115 \
+       --disable-multilib \
+       --disable-default-pie \
+       --enable-languages=c,c++,fortran \
+       --disable-nls \
+       --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
     #make -j $JOBS || { echo "Erro na compilação"; exit 1; }
+    make 
     # Vou modificar isso por hora, tá estourando a memoria quando roda em paralelo. É mais lento, porém resolve.
     make install || { echo "Erro na instalação"; exit 1; }
 
