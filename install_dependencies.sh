@@ -4,6 +4,9 @@
 DIR_WRF=$HOME/.wrf_dependencies
 mkdir -p $DIR_WRF
 
+# Numero de cores utilizados na instalação
+JOBS=4
+
 # funcao que instala o gcc 11.5
 install_gcc() {
     local url="https://ftp.gnu.org/gnu/gcc/gcc-11.5.0/gcc-11.5.0.tar.xz"
@@ -32,9 +35,8 @@ install_gcc() {
        --enable-languages=c,c++,fortran \
        --disable-nls \
        --disable-libsanitizer || { echo "Erro no configure"; exit 1; }
-    #make -j $JOBS || { echo "Erro na compilação"; exit 1; }
-    make 
-    # Vou modificar isso por hora, tá estourando a memoria quando roda em paralelo. É mais lento, porém resolve.
+    make -j $JOBS || { echo "Erro na compilação"; exit 1; }
+   
     make install || { echo "Erro na instalação"; exit 1; }
 
     cd ..
@@ -48,14 +50,16 @@ install_gcc() {
     # verifica se ja foi adicionado
     if ! grep -q "DIR_WRF/gcc115/bin" ~/.bashrc; then 
 cat <<EOF >> ~/.bashrc	
+
+export DIR_WRF=$HOME/.wrf_dependencies
 # GCC 11.5
-export PATH=DIR_WRF/gcc115/bin:\$PATH
+export PATH=\$DIR_WRF/gcc115/bin:\$PATH
 # WRF Dependencies
-export NETCDF=DIR_WRF/netcdf
-export LD_LIBRARY_PATH=\$NETCDF/lib:DIR_WRF/grib2/lib
-export PATH=\$NETCDF/bin:DIR_WRF/mpich/bin:\$PATH
-export JASPERLIB=DIR_WRF/grib2/lib
-export JASPERINC=DIR_WRF/grib2/include
+export NETCDF=$DIR_WRF/netcdf
+export LD_LIBRARY_PATH=\$NETCDF/lib:\$DIR_WRF/grib2/lib
+export PATH=\$NETCDF/bin:$DIR_WRF/mpich/bin:\$PATH
+export JASPERLIB=\$DIR_WRF/grib2/lib
+export JASPERINC=\$DIR_WRF/grib2/include
 EOF
     fi
     
@@ -101,9 +105,6 @@ export F77=gfortran
 export FFLAGS="-m64 -fallow-argument-mismatch"
 export LDFLAGS="-L$NETCDF/lib -L$DIR_WRF/grib2/lib"
 export CPPFLAGS="-I$NETCDF/include -I$DIR_WRF/grib2/include -fcommon"
-
-# Numero de cores utilizados na instalação
-JOBS=4
 
 # download, extract, compile, and install
 install_lib() {
